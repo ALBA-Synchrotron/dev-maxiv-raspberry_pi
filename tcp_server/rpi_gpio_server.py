@@ -15,7 +15,7 @@ GPIO.setwarnings(False)
 
 class TCP(SocketServer.BaseRequestHandler):
 
-    pinlist = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16]
+    pinlist = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 32, 36, 38, 40]
 
     def handle(self):
         #self.request.settimeout(5)
