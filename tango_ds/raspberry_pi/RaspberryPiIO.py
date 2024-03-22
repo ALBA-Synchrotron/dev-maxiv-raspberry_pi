@@ -184,6 +184,70 @@ class RaspberryPiIO(Device):
                         fset="set_pin16_output",
                         fisallowed="is_output_allowed")
 
+    pin32_voltage = attribute(label="PIN_32 voltage", dtype=bool,
+                              display_level=DispLevel.OPERATOR,
+                              access=AttrWriteType.READ_WRITE,
+                              doc="PIN_32 voltage",
+                              fget="get_pin32_voltage",
+                              fset="set_pin32_voltage",
+                              fisallowed="is_voltage_allowed")
+
+    pin32_output = attribute(label="PIN_32 output", dtype=bool,
+                             display_level=DispLevel.OPERATOR,
+                             access=AttrWriteType.READ_WRITE,
+                             doc="PIN_32 output",
+                             fget="get_pin32_output",
+                             fset="set_pin32_output",
+                             fisallowed="is_output_allowed")
+
+    pin36_voltage = attribute(label="PIN_36 voltage", dtype=bool,
+                              display_level=DispLevel.OPERATOR,
+                              access=AttrWriteType.READ_WRITE,
+                              doc="PIN_36 voltage",
+                              fget="get_pin36_voltage",
+                              fset="set_pin36_voltage",
+                              fisallowed="is_voltage_allowed")
+
+    pin36_output = attribute(label="PIN_36 output", dtype=bool,
+                             display_level=DispLevel.OPERATOR,
+                             access=AttrWriteType.READ_WRITE,
+                             doc="PIN 36 output",
+                             fget="get_pin36_output",
+                             fset="set_pin36_output",
+                             fisallowed="is_output_allowed")
+
+    pin38_voltage = attribute(label="PIN_38 voltage", dtype=bool,
+                              display_level=DispLevel.OPERATOR,
+                              access=AttrWriteType.READ_WRITE,
+                              doc="PIN_38 voltage",
+                              fget="get_pin38_voltage",
+                              fset="set_pin38_voltage",
+                              fisallowed="is_voltage_allowed")
+
+    pin38_output = attribute(label="PIN_38 output", dtype=bool,
+                             display_level=DispLevel.OPERATOR,
+                             access=AttrWriteType.READ_WRITE,
+                             doc="PIN_38 output",
+                             fget="get_pin38_output",
+                             fset="set_pin38_output",
+                             fisallowed="is_output_allowed")
+
+    pin40_voltage = attribute(label="PIN_40 voltage", dtype=bool,
+                              display_level=DispLevel.OPERATOR,
+                              access=AttrWriteType.READ_WRITE,
+                              doc="PIN_40 voltage",
+                              fget="get_pin40_voltage",
+                              fset="set_pin40_voltage",
+                              fisallowed="is_voltage_allowed")
+
+    pin40_output = attribute(label="PIN_40 output", dtype=bool,
+                             display_level=DispLevel.OPERATOR,
+                             access=AttrWriteType.READ_WRITE,
+                             doc="PIN_40 output",
+                             fget="get_pin40_output",
+                             fset="set_pin40_output",
+                             fisallowed="is_output_allowed")
+
     Host = device_property(dtype=str)
     Port = device_property(dtype=int, default_value=9788)
 
@@ -445,6 +509,86 @@ class RaspberryPiIO(Device):
     @catch_connection_error
     def set_pin16_output(self, value):
         self.raspberry.setoutput(16, value)
+
+    #gpio32
+    @catch_connection_error
+    def get_pin32_voltage(self):
+        self.__pin32_voltage = self.raspberry.readvoltage(32)
+        return self.__pin32_voltage
+
+    @catch_connection_error
+    def set_pin32_voltage(self, value):
+        self.get_pin32_output()
+        self.set_voltage(value, 32, self.__pin32_output)
+
+    @catch_connection_error
+    def get_pin32_output(self):
+        self.__pin32_output = self.raspberry.readoutput(32)
+        return self.__pin32_output
+
+    @catch_connection_error
+    def set_pin32_output(self, value):
+        self.raspberry.setoutput(32, value)
+
+    #gpio36
+    @catch_connection_error
+    def get_pin36_voltage(self):
+        self.__pin36_voltage = self.raspberry.readvoltage(36)
+        return self.__pin36_voltage
+
+    @catch_connection_error
+    def set_pin36_voltage(self, value):
+        self.get_pin36_output()
+        self.set_voltage(value, 36, self.__pin36_output)
+
+    @catch_connection_error
+    def get_pin36_output(self):
+        self.__pin36_output = self.raspberry.readoutput(36)
+        return self.__pin36_output
+
+    @catch_connection_error
+    def set_pin36_output(self, value):
+        self.raspberry.setoutput(36, value)
+
+    #gpio38
+    @catch_connection_error
+    def get_pin38_voltage(self):
+        self.__pin38_voltage = self.raspberry.readvoltage(38)
+        return self.__pin38_voltage
+
+    @catch_connection_error
+    def set_pin38_voltage(self, value):
+        self.get_pin38_output()
+        self.set_voltage(value, 38, self.__pin38_output)
+
+    @catch_connection_error
+    def get_pin38_output(self):
+        self.__pin38_output = self.raspberry.readoutput(38)
+        return self.__pin38_output
+
+    @catch_connection_error
+    def set_pin38_output(self, value):
+        self.raspberry.setoutput(38, value)
+
+    #gpio40
+    @catch_connection_error
+    def get_pin40_voltage(self):
+        self.__pin40_voltage = self.raspberry.readvoltage(40)
+        return self.__pin40_voltage
+
+    @catch_connection_error
+    def set_pin40_voltage(self, value):
+        self.get_pin40_output()
+        self.set_voltage(value, 40, self.__pin16_output)
+
+    @catch_connection_error
+    def get_pin40_output(self):
+        self.__pin40_output = self.raspberry.readoutput(40)
+        return self.__pin40_output
+
+    @catch_connection_error
+    def set_pin40_output(self, value):
+        self.raspberry.setoutput(40, value)
     #End of gpio's
 
     def is_TurnOff_allowed(self):
