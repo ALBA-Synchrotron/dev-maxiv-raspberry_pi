@@ -66,11 +66,6 @@ class RaspberryPiIO(Device):
                 r_meth=self.read_pin_output,
                 w_meth=self.write_pin_output,
                 is_allo_meth=self.is_output_allowed)
-            # If event needed, setup change event
-            #self.set_change_event(voltage_attrname, True, True)
-            #self.set_change_event(output_attrname, True, True)
-
-            # Voltage
 
     @catch_connection_error
     def read_pin_voltage(self, attr):
@@ -109,28 +104,6 @@ class RaspberryPiIO(Device):
     def init_device(self):
         Device.init_device(self)
         self.raspberry = Raspberry(self.Host)
-
-        #Event flags
-        #self.set_change_event('pin3_voltage', True, True)
-        #self.set_change_event('pin5_voltage', True, True)
-        #self.set_change_event('pin7_voltage', True, True)
-        #self.set_change_event('pin8_voltage', True, True)
-        #self.set_change_event('pin10_voltage', True, True)
-        #self.set_change_event('pin11_voltage', True, True)
-        #self.set_change_event('pin12_voltage', True, True)
-        #self.set_change_event('pin13_voltage', True, True)
-        #self.set_change_event('pin15_voltage', True, True)
-        #self.set_change_event('pin16_voltage', True, True)
-        #self.set_change_event('pin3_output', True, True)
-        #self.set_change_event('pin5_output', True, True)
-        #self.set_change_event('pin7_output', True, True)
-        #self.set_change_event('pin8_output', True, True)
-        #self.set_change_event('pin10_output', True, True)
-        #self.set_change_event('pin11_output', True, True)
-        #self.set_change_event('pin12_output', True, True)
-        #self.set_change_event('pin13_output', True, True)
-        #self.set_change_event('pin15_output', True, True)
-        #self.set_change_event('pin16_output', True, True)
 
         #No error decorator for the init function
         try:
