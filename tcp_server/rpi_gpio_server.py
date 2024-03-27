@@ -93,6 +93,10 @@ class TCP(socketserver.BaseRequestHandler):
             boolstr = 'False'
         self.request.sendall((boolstr).encode())
 
+    def get_pinlist(self):
+        values = [str(i) for i in self.pinlist]
+        return ",".join(values)
+
     def gpio_action(self, data):
         actionlist = data.split()
         pin = actionlist[0]
@@ -123,6 +127,9 @@ class TCP(socketserver.BaseRequestHandler):
         #readoutput
         elif action == 'READOUTPUT':
             self.read_output(pin)
+
+        elif action == 'GETPINLIST':
+            self.get_pinlist()
 
 def main():
     parser = argparse.ArgumentParser(description='Raspberry PI TCP/IP Server.')
