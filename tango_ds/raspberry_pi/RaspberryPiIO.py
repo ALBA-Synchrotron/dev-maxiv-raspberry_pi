@@ -80,8 +80,8 @@ class RaspberryPiIO(Device):
         w_value = attr.get_write_value()
         attr_name = attr.get_name()
         pin_number = self._get_pin(attr_name)
-        python_attr = "pin{}_voltage".format(pin_number)
-        self.set_voltage(w_value, pin_number, getattr(self, python_attr))
+        output =self.raspberry.readoutput(pin_number)
+        self.set_voltage(w_value, pin_number, output)
         setattr(self, "{}".format(attr_name), w_value)
 
     # Ouptut
