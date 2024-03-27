@@ -95,7 +95,8 @@ class TCP(socketserver.BaseRequestHandler):
 
     def get_pinlist(self):
         values = [str(i) for i in self.pinlist]
-        return ",".join(values)
+        values = ",".join(values)
+        self.request.sendall((values).encode())
 
     def gpio_action(self, data):
         actionlist = data.split()

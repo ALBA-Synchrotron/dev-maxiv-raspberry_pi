@@ -116,6 +116,29 @@ class RaspberryPiIO(Device):
             self.debug_stream('Unable to connect to Raspberry Pi TCP/IP'
                                 + ' server.')
 
+        # Perform check and removal of unwanted pins
+        try:
+            # Get the list of pins from the device
+            available_pins = set(self.get_pinsList())
+
+            # Convert self.pins to a set for efficient lookup
+            current_pins = set(self.pins)
+
+            # Find pins to remove
+            pins_to_remove = current_pins - available_pins
+
+            # Remove pins not present in device_pins
+            self.pins = list(current_pins & available_pins)
+
+            if pins_to_remove:
+                # If there are pins to remove, send a message indicating which
+                # pins are removed
+                removed_pins_message = (f"Removed pins: "
+                                    f"{', '.join(map(str,pins_to_remove))}")
+                self.debug_stream(removed_pins_message)
+        except Exception as e:
+            # Handle errors in obtaining the list of pins or in the comparison
+            self.debug_stream('Error during pin comparison:', str(e))
     def delete_device(self):
         self.raspberry.disconnect_from_pi()
         self.raspberry = None

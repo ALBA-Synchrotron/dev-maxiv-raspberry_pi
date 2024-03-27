@@ -37,6 +37,12 @@ class Raspberry:
         bol = self.str_to_bool(val)
         return bol
 
+    def get_pinList(self):
+        self.sendall("GETPINSLIST")
+        val = str(self.sock.recv(1024))
+        val = val.replace("'", "").replace("b", "")
+        values = [int(x) for x in val.split(",")]
+        return values
     def readvoltage(self, pin):
         cmd = str(pin) + ' READVOLTAGE'
         return self.query(cmd)
