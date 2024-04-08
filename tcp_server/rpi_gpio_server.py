@@ -93,7 +93,7 @@ class TCP(socketserver.BaseRequestHandler):
             boolstr = 'False'
         self.request.sendall((boolstr).encode())
 
-    def get_pinlist(self):
+    def read_pin_list(self):
         values = [str(i) for i in self.pinlist]
         values = ",".join(values)
         self.request.sendall((values).encode())
@@ -129,8 +129,8 @@ class TCP(socketserver.BaseRequestHandler):
         elif action == 'READOUTPUT':
             self.read_output(pin)
 
-        elif action == 'GETPINLIST':
-            self.get_pinlist()
+        elif action == 'READPINLIST':
+            self.read_pin_list()
 
 def main():
     parser = argparse.ArgumentParser(description='Raspberry PI TCP/IP Server.')
