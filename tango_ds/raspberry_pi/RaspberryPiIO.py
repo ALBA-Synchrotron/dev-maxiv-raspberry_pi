@@ -43,6 +43,41 @@ class RaspberryPiIO(Device):
 
         return pin_number
 
+    def init_device(self):
+        Device.init_device(self)
+        self.raspberry = Raspberry(self.Host)
+
+        # No error decorator for the init function
+        try:
+            self.raspberry.connect_to_pi()
+            self.set_state(DevState.ON)
+            # Get the list of pins from the device
+            available_pins = set(self.raspberry.read_pin_list())
+
+            # Convert self.pins to a set for efficient lookup
+            current_pins = set(self.pins)
+
+            # Find pins to remove
+            pins_to_remove = ', '.join(map(str, current_pins - available_pins))
+
+            # Remove pins not present in device_pins
+            self.pins = list(current_pins & available_pins)
+
+            if pins_to_remove:
+                msg = "Removed pins: {}".format(pins_to_remove)
+                self.debug_stream(msg)
+
+        except (BrokenPipeError, ConnectionRefusedError,
+                ConnectionError, socket.timeout,
+                TimeoutError) as connectionerror:
+            self.set_state(DevState.FAULT)
+            self.debug_stream('Unable to connect to Raspberry Pi TCP/IP'
+                              + ' server.')
+
+    def delete_device(self):
+        self.raspberry.disconnect_from_pi()
+        self.raspberry = None
+
     def initialize_dynamic_attributes(self):
         for pin_number in self.pins:
             # Create attribute name
@@ -80,9 +115,19 @@ class RaspberryPiIO(Device):
         w_value = attr.get_write_value()
         attr_name = attr.get_name()
         pin_number = self._get_pin(attr_name)
-        output =self.raspberry.readoutput(pin_number)
-        self.set_voltage(w_value, pin_number, output)
-        setattr(self, "{}".format(attr_name), w_value)
+        output = self.raspberry.readoutput(pin_number)
+        if not output or output is None:
+            raise ValueError("Pin must be setup as an output first")
+        else:
+            request = self.raspberry.setvoltage(pin_number, w_value)
+            if not request:
+                raise ValueError("Pin must be setup as an output first")
+
+    def is_voltage_allowed(self, request):
+        if request == AttReqType.READ_REQ:
+            return (self.get_state() == DevState.ON)
+        if request == AttReqType.WRITE_REQ:
+            return (self.get_state() == DevState.ON)
 
     # Ouptut
 
