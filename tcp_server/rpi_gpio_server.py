@@ -100,8 +100,11 @@ class TCP(socketserver.BaseRequestHandler):
 
     def gpio_action(self, data):
         actionlist = data.split()
-        pin = actionlist[0]
-        action = actionlist[1]
+        if len(actionlist) == 1:
+           action = actionlist[0]
+        else:
+           pin = actionlist[0]
+           action = actionlist[1]
         if len(actionlist)>2:
             setvalue = actionlist[2]
 
