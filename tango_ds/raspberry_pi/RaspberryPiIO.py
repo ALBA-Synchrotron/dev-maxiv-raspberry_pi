@@ -8,21 +8,10 @@ KITS 2018-05-31.
 
 import re
 import socket
+from tango import AttReqType, CmdArgType, Attr, READ_WRITE, DevState
+from tango.server import Device, command, device_property
 
-import numpy as np
-import requests
-
-from raspberry_pi.resource import catch_connection_error
-
-from tango import (AttReqType,
-                   AttrWriteType,
-                   DispLevel,
-                   CmdArgType,
-                   Attr,
-                   READ_WRITE)
-from tango import DevState, DebugIt
-from tango.server import Device, attribute, command, pipe, device_property
-
+from .resource import catch_connection_error
 from .RPi import Raspberry
 
 
@@ -39,7 +28,7 @@ class RaspberryPiIO(Device):
             pin_number = None
 
         if pin_number is None:
-            raise Exception('Error geting pin number from  '
+            raise Exception('Error getting pin number from  '
                             '[{}]'.format(attr_name))
 
         return pin_number
@@ -125,11 +114,11 @@ class RaspberryPiIO(Device):
 
     def is_voltage_allowed(self, request):
         if request == AttReqType.READ_REQ:
-            return (self.get_state() == DevState.ON)
+            return self.get_state() == DevState.ON
         if request == AttReqType.WRITE_REQ:
-            return (self.get_state() == DevState.ON)
+            return self.get_state() == DevState.ON
 
-    # Ouptut
+    # Output
     @catch_connection_error
     def read_pin_output(self, attr):
         attr_name = attr.get_name()
@@ -164,6 +153,7 @@ class RaspberryPiIO(Device):
 
 
 run = RaspberryPiIO.run_server
+
 
 if __name__ == "__main__":
     RaspberryPiIO.run_server()

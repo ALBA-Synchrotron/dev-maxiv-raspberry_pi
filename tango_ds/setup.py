@@ -15,7 +15,8 @@ setup(name="tangods-raspberry_pi",
 
 
       author="J. Sundberg, Antoine Dupre, Juliano Murari",
-      author_email="jens.sundberg@maxiv.lu.se, antoine.dupre@maxiv.lu.se, juliano.murari@maxiv.lu.se",
+      author_email="jens.sundberg@maxiv.lu.se, antoine.dupre@maxiv.lu.se, "
+                   "juliano.murari@maxiv.lu.se",
       url="http://www.maxiv.lu.se",
       install_requires=['setuptools', 'pytango>=9.2.1', 'requests'],
       setup_requires=['pytest-runner'],

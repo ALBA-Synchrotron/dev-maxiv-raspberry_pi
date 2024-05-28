@@ -43,6 +43,7 @@ class Raspberry:
         val = val.replace("'", "").replace("b", "")
         values = [int(x) for x in val.split(",")]
         return values
+
     def readvoltage(self, pin):
         cmd = str(pin) + ' READVOLTAGE'
         return self.query(cmd)
