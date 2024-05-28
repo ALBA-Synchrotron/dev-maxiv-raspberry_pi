@@ -53,7 +53,7 @@ class RaspberryPiIO(Device):
             self.raspberry.connect_to_pi()
             self.set_state(DevState.ON)
             # Get the list of pins from the device
-            available_pins = set(self.raspberry.read_pin_list())
+            available_pins = set(self.raspberry.read_pins_list())
 
             # Convert self.pins to a set for efficient lookup
             current_pins = set(self.pins)

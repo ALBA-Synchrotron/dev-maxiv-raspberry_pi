@@ -37,7 +37,7 @@ class Raspberry:
         bol = self.str_to_bool(val)
         return bol
 
-    def read_pin_list(self):
+    def read_pins_list(self):
         self.sendall("READPINSLIST")
         val = str(self.sock.recv(1024))
         val = val.replace("'", "").replace("b", "")
