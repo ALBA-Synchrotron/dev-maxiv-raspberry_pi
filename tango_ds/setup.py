@@ -5,7 +5,7 @@ from setuptools import setup
 
 # Setup
 setup(name="tangods-raspberry_pi",
-      version="0.1.3",
+      version="0.2.0",
       packages=['raspberry_pi'],
       entry_points={
           'console_scripts': ['RaspberryPiIO = raspberry_pi:run']},
@@ -15,7 +15,8 @@ setup(name="tangods-raspberry_pi",
 
 
       author="J. Sundberg, Antoine Dupre, Juliano Murari",
-      author_email="jens.sundberg@maxiv.lu.se, antoine.dupre@maxiv.lu.se, juliano.murari@maxiv.lu.se",
+      author_email="jens.sundberg@maxiv.lu.se, antoine.dupre@maxiv.lu.se, "
+                   "juliano.murari@maxiv.lu.se",
       url="http://www.maxiv.lu.se",
       install_requires=['setuptools', 'pytango>=9.2.1', 'requests'],
       setup_requires=['pytest-runner'],

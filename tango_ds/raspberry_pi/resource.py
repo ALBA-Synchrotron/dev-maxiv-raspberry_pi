@@ -6,7 +6,8 @@ Error decorator for the Raspberry Pi Tango Device Server.
 
 import socket
 from functools import wraps
-from PyTango import DevState
+from tango import DevState
+
 
 def catch_connection_error(func):
     """Decorator for connection errors."""

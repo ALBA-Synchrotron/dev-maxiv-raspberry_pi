@@ -3,8 +3,10 @@ TCP Server for the RPi GPIO tango device server.
 2018-10-29.
 """
 
-import socket
-import SocketServer
+try:
+    import socketserver
+except ImportError:
+    import SocketServer as socketserver
 import RPi.GPIO as GPIO
 import argparse
 import subprocess
@@ -13,31 +15,32 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
 
-class TCP(SocketServer.BaseRequestHandler):
+class TCP(socketserver.BaseRequestHandler):
 
-    pinlist = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16]
+    pinlist = [3, 5, 7, 8, 10, 11, 12, 13, 15, 16, 18, 19, 21, 22, 23, 24, 26,
+               29, 31, 32, 33, 35, 36, 38, 37, 40]
 
     def handle(self):
-        #self.request.settimeout(5)
+        # self.request.settimeout(5)
         print("Client connection: {}".format(self.client_address[0]))
         while True:
-                data = self.request.recv(1024).strip()
-                if not data:
-                    break
-                #print("{} wrote:".format(self.client_address[0]))
-                data = str(data).replace("'", "")
-                data = data.replace("b", "")
-                data = data.strip()
-                data = data.split(";")
-                for d in data:
-                    if d:
-                        self.gpio_action(d)
+            data = self.request.recv(1024).strip()
+            if not data:
+                break
+            # print("{} wrote:".format(self.client_address[0]))
+            data = str(data).replace("'", "")
+            data = data.replace("b", "")
+            data = data.strip()
+            data = data.split(";")
+            for d in data:
+                if d:
+                    self.gpio_action(d)
         print("Client disconnected: {}".format(self.client_address[0]))
 
     def set_voltage(self, pin, setvalue):
         if GPIO.gpio_function(int(pin)) == 1:
             boolstr = 'False'
-            self.request.sendall((boolstr).encode())
+            self.request.sendall(boolstr.encode())
         else:
             if setvalue == 'True':
                 try:
@@ -52,7 +55,7 @@ class TCP(SocketServer.BaseRequestHandler):
                     self.set_output(int(pin), 'True')
                     GPIO.output(int(pin), GPIO.LOW)
             boolstr = 'True'
-            self.request.sendall((boolstr).encode())
+            self.request.sendall(boolstr.encode())
 
     def set_output(self, pin, setvalue):
         if setvalue == 'True':
@@ -61,7 +64,7 @@ class TCP(SocketServer.BaseRequestHandler):
             GPIO.setup(int(pin), GPIO.IN)
 
     def reset(self, pin):
-         if pin == 'ALL':
+        if pin == 'ALL':
             GPIO.cleanup(self.pinlist)
 
     def off(self):
@@ -77,64 +80,78 @@ class TCP(SocketServer.BaseRequestHandler):
                 boolstr = 'True'
             else:
                 boolstr = 'False'
-            self.request.sendall((boolstr).encode())
+            self.request.sendall(boolstr.encode())
         except RuntimeError:
             boolstr = 'None'
-            self.request.sendall((boolstr).encode())
+            self.request.sendall(boolstr.encode())
 
     def read_output(self, pin):
         if GPIO.gpio_function(int(pin)) == 0:
             boolstr = 'True'
         else:
             boolstr = 'False'
-        self.request.sendall((boolstr).encode())
+        self.request.sendall(boolstr.encode())
+
+    def read_pin_list(self):
+        values = [str(i) for i in self.pinlist]
+        values = ",".join(values)
+        self.request.sendall(values.encode())
 
     def gpio_action(self, data):
         actionlist = data.split()
-        pin = actionlist[0]
-        action = actionlist[1]
-        if len(actionlist)>2:
+        if len(actionlist) == 1:
+            action = actionlist[0]
+        else:
+            pin = actionlist[0]
+            action = actionlist[1]
+        if len(actionlist) > 2:
             setvalue = actionlist[2]
 
-        #setvoltage
+        # setvoltage
         if action == 'SETVOLTAGE':
             self.set_voltage(pin, setvalue)
 
-        #setoutput
+        # setoutput
         elif action == 'SETOUTPUT':
             self.set_output(pin, setvalue)
 
-        #reset
+        # reset
         elif action == 'RESET':
             self.reset(pin)
 
-        #off
+        # off
         elif action == 'OFF':
             self.off()
 
-        #readvoltage
+        # readvoltage
         elif action == 'READVOLTAGE':
             self.read_voltage(pin)
 
-        #readoutput
+        # readoutput
         elif action == 'READOUTPUT':
             self.read_output(pin)
+
+        elif action == 'READPINLIST':
+            self.read_pin_list()
+
 
 def main():
     parser = argparse.ArgumentParser(description='Raspberry PI TCP/IP Server.')
     parser.add_argument('-host', metavar='HOST', type=str,
-            default='0.0.0.0', help='host ip number (str)')
+                        default='0.0.0.0', help='host ip number (str)')
     parser.add_argument('-port', metavar='PORT', type=int,
-            default=9788, help='host port number (int)')
+                        default=9788, help='host port number (int)')
     parser.add_argument('-camera', metavar='CAMERA', type=str,
-            default='n', help='camera support y/n (str)')
+                        default='n', help='camera support y/n (str)')
     args = parser.parse_args()
     HOST, PORT, CAMERA = args.host, args.port, args.camera
     if CAMERA == 'y':
-        p = subprocess.Popen("python -c 'import jpg_streamer; jpg_streamer.main()'", shell=True)
-    server = SocketServer.TCPServer((HOST, PORT), TCP)
+        p = subprocess.Popen("python -c 'import jpg_streamer; "
+                             "jpg_streamer.main()'", shell=True)
+    server = socketserver.TCPServer((HOST, PORT), TCP)
     # interrupt with Ctrl+c
     server.serve_forever()
+
 
 if __name__ == '__main__':
     main()
