@@ -5,7 +5,7 @@ from setuptools import setup
 
 # Setup
 setup(name="tcpserver-raspberry_pi",
-      version="1.0.0",
+      version="1.1.0",
       py_modules=['rpi_gpio_server', 'advanced_streamer'],
       entry_points={
           'console_scripts': [
