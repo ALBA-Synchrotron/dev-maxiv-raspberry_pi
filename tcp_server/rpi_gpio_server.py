@@ -131,7 +131,7 @@ class TCP(socketserver.BaseRequestHandler):
         elif action == 'READOUTPUT':
             self.read_output(pin)
 
-        elif action == 'READPINLIST':
+        elif action == 'READPINSLIST':
             self.read_pin_list()
 
 
