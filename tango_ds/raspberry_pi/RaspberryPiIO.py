@@ -19,6 +19,7 @@ class RaspberryPiIO(Device):
     Host = device_property(dtype=str)
     Port = device_property(dtype=int, default_value=9788)
     pins = device_property(dtype=(int,))
+    invert_voltage = device_property(dtype=bool, default_value=False)
 
     def _get_pin(self, attr_name):
         m = re.search('\s*(?P<pin>[\d]+)\s*', attr_name)
@@ -96,12 +97,12 @@ class RaspberryPiIO(Device):
     def read_pin_voltage(self, attr):
         attr_name = attr.get_name()
         pin_number = self._get_pin(attr_name)
-        value = self.raspberry.readvoltage(pin_number)
+        value = self.raspberry.readvoltage(pin_number) ^ self.invert_voltage # XOR gate
         attr.set_value(value)
 
     @catch_connection_error
     def write_pin_voltage(self, attr):
-        w_value = attr.get_write_value()
+        w_value = attr.get_write_value() ^ self.invert_voltage # XOR gate
         attr_name = attr.get_name()
         pin_number = self._get_pin(attr_name)
         output = self.raspberry.readoutput(pin_number)
