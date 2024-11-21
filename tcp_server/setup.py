@@ -6,7 +6,10 @@ from setuptools import setup
 # Setup
 setup(
     name="tcpserver-raspberry_pi",
-    use_scm_version=True,
+    use_scm_version={
+        "root": "..",  # Ajusta esto según la estructura de tu repositorio
+        "relative_to": __file__,
+    },
     py_modules=['rpi_gpio_server', 'advanced_streamer'],
     entry_points={
         'console_scripts': [
