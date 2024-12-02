@@ -1,0 +1,48 @@
+# File: conda-recipe-tcp_server/meta.yaml
+{% set data = load_setup_py_data(setup_file="../tcp_server/setup.py", from_recipe_dir=True) %}
+{% set GIT_HASHTAG = os.popen("git log --pretty=format:'%h' -n 1").read().strip() %}
+{% set VERSION = os.popen("python ../tcp_server/setup.py --version").read().strip() %}
+
+package:
+  name: {{ data.get('name').lower().replace(' ', '_') }}
+  version: {{ VERSION }}
+
+source:
+  path: ..
+
+build:
+  number: {{ environ.get('BUILD_NUMBER', 0) }}
+  string: py{{ CONDA_PY }}_{{ PKG_BUILDNUM }}_g{{ GIT_HASHTAG }}
+  noarch: python
+  script: '{{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt'
+
+entry_points: {{ data.get('entry_points', {}).get('console_scripts', []) }}
+
+requirements:
+  host:
+    - python
+    - setuptools
+    {% for dep in data['setup_requires'] %}
+    - {{ dep.lower() }}
+    {% endfor %}
+  run:
+    - python
+    {% for dep in data['install_requires'] %}
+    - {{ dep.lower() }}
+    {% endfor %}
+    {% for mod in data['py_modules'] %}
+    - {{ mod }}
+    {% endfor %}
+
+test:
+  requires:
+    {% for dep in data['extras_require'].get('test', []) %}
+    - {{ dep.lower() }}
+    {% endfor %}
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
+  summary: {{ data.get('description') }}
+  author: {{ data.get('author') }}
+  description: {{ data.get('long_description') }}
