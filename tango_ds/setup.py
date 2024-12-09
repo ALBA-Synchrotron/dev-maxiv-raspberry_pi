@@ -7,7 +7,7 @@ from setuptools import setup
 setup(
     name="tangods-raspberry_pi",
     use_scm_version={
-        "root": "..",  # Ajusta esto según la estructura de tu repositorio
+        "root": "..",
         "relative_to": __file__,
     },
     packages=['raspberry_pi'],
@@ -22,7 +22,7 @@ setup(
     url="http://www.maxiv.lu.se",
     install_requires=['setuptools', 'pytango>=9.2.1', 'requests'],
     setup_requires=['setuptools_scm', 'pytest-runner'],
-    extras_require={
+    extra_requires={
         'test': ['pytest-runner', 'pytest-xdist', 'pytest-mock'],
     },
 )
