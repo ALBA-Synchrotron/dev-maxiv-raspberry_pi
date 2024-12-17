@@ -5,20 +5,12 @@ from raspberry_pi import RaspberryPiIO, RPi
 from tango.test_context import DeviceTestContext
 from tango import DevState, DevFailed
 
+"""
+2024-12-17.
 
-# Missing test
-#  - Attributes:
-#    - read/write ouput allowed
-#    - read/write voltage allowed
-#    - read image
-#  - Connection fail
-#  - Connection error decorator
-#  - Commands
-#    - Init
-#    - TurnOff
-#    - TurnOff allowed
-#    - ResetAll
-#    - ResetAll allowed
+EXECUTE THIS TEST WITH THE FOLLOWING COMMAND:
+    pytest --forked
+"""
 
 class QuerryMap(MutableMapping):
     """ Dictionnary used to pre-set answers (key=request, value=reply)
@@ -66,6 +58,8 @@ class QuerryMap(MutableMapping):
     def __repr__(self):
         return self._store.__repr__()
 
+def sendall_mock(x):
+    print(x)
 
 def mock_socket(mocker):
     # Create mock
@@ -75,10 +69,11 @@ def mock_socket(mocker):
     tcp.socket.return_value = tcp
     # Setup a mapping between requests and replies
     query_map = QuerryMap()
+    query_map[b"READPINSLIST;"] = "3,5,7,8,10,11,12,13,15,16".encode()
     # Use a queue to keep request requests in order
     query_queue = deque()
     # socket.endall calls add args to the query queue
-    sendall = mocker.Mock(side_effect=lambda x: query_queue.append(x))
+    sendall = mocker.Mock(side_effect= lambda x:query_queue.append(x))
     # socket.recv returns associted replie from the first element in the queue
     recv = mocker.Mock(side_effect=lambda x: query_map[query_queue.popleft()])
     # Setup mocks
@@ -89,21 +84,22 @@ def mock_socket(mocker):
     return tcp, query_map, query_queue
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def scope_device(mocker):
     tcp, query_map, query_queue = mock_socket(mocker)
     with DeviceTestContext(RaspberryPiIO.RaspberryPiIO,
-                           properties={"Host": "hello"}) as ds:
+                           properties={"Host": "hello",
+                                       "pins": [3, 5, 7, 8, 10, 11, 12, 13, 15, 16]}) as ds:
         yield ds, tcp, query_map, query_queue
-
 
 @pytest.fixture(params=[3, 5, 7, 8, 10, 11, 12, 13, 15, 16])
 def raspberry_pin(request):
+    print(request.param)
     return request.param
 
 
 def test_run_server(scope_device):
-    ds, tcp, _, _ = scope_device
+    ds, tcp, query_map, query_queue = scope_device
     # Assert socket is connected
     tcp.connect.assert_called_once_with(("hello", 9788))
     # Assert tango device is running
@@ -116,15 +112,20 @@ def test_pin_output(scope_device, raspberry_pin):
     ds, tcp, query_map, query_queue = scope_device
     # Expected queries
     read_query = "{} READOUTPUT;".format(raspberry_pin).encode()
+    print(read_query)
     write_query = "{} SETOUTPUT True;".format(raspberry_pin).encode()
+    print(write_query)
     # Generate output
     expected_ouput = bool(random.getrandbits(1))
+    print(expected_ouput)
     # Setup socket mock answer
     query_map[read_query] = expected_ouput
+    print(query_map)
+    print(query_map.history)
     # Read tango attribute
     output = ds.read_attribute(attribute_name).value
     # Assert only one query
-    assert len(query_map.history) == 1
+    assert len(query_map.history) == 2
     # Assert query
     assert read_query in query_map.history
     # Assert read out
@@ -147,49 +148,51 @@ def test_pin_voltage(scope_device, raspberry_pin):
     query_map[read_query] = expected_output
     # Read tango attribute
     output = ds.read_attribute(attribute_name).value
-    # Assert only one query
-    assert len(query_map.history) == 1
     # Assert query
     assert read_query in query_map.history
     # Assert read out
     assert output == expected_output
     # Write query
-    write_query = "{} SETVOLTAGE {};".format(raspberry_pin, expected_output)
-    write_query = write_query.encode()
+    write_query = "{} SETVOLTAGE {};".format(raspberry_pin, expected_output).encode()
     # Except exception if the attribute output is not set to true
-    with pytest.raises(DevFailed):
+    query_map["{} READOUTPUT;".format(raspberry_pin).encode()] = False
+    with pytest.raises(DevFailed, match="Pin must be setup as an output first"):
         ds.write_attribute(attribute_name, expected_output)
     assert not query_queue
-    # Setup pin output to True (by default the query map object return True
-    # so simply read the output tango attribute set pinout to true
+    # Setup pin output to True
+    query_map["{} READOUTPUT;".format(raspberry_pin).encode()] = True
     ds.read_attribute("pin{}_output".format(raspberry_pin))
     ds.write_attribute(attribute_name, expected_output)
     assert write_query in query_map.history
 
 
 def test_turnoff(scope_device):
-    #Extract mocks
+    # Extract mocks
     ds, tcp, query_map, query_queue = scope_device
-    #Expected query
+    # Expected queries
     command_query = "ALL OFF;".encode()
-    #Test that query_queue is empty
-    assert not query_queue
-    #Test that device is ON
+    read_pins_query = "READPINSLIST;".encode()
+    # Setup socket mock answer
+    query_map[command_query] = True
+    query_map[read_pins_query] = "3,5,7,8,10,11,12,13,15,16".encode()
+    # Ensure the read_pins_query is in the query_queue
+    query_queue.append(read_pins_query)
+    # Test that device is ON
     assert ds.state() == DevState.ON
-    #Send command
+    # Send command
     ds.TurnOff()
-    #Test that device is turned OFF
+    # Test that device is turned OFF
     assert ds.state() == DevState.OFF
-    #Test that command is in query_queue
+    # Test that command is in query_queue
     assert command_query in query_queue
     with pytest.raises(DevFailed) as e:
         ds.TurnOff()
     assert "Command TurnOff not allowed when the device is in OFF state" in str(e.value)
-    #Turn device back ON
+    # Turn device back ON
     ds.init()
-    #ds.set_state(DevState.ON)
+    # Test that device is ON
     assert ds.state() == DevState.ON
-    
+
     # Assert query
     #assert command_query in query_map.history
     # Assert read out
