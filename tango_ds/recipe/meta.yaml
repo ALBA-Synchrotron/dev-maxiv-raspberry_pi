@@ -1,0 +1,49 @@
+# File: conda-recipe-tango_ds/meta.yaml
+{% set data = load_setup_py_data(setup_file="../setup.py", from_recipe_dir=True) %}
+{% set version = os.popen('python -c "import setuptools_scm;print(setuptools_scm.get_version())"').read().strip() %}
+
+package:
+  name: {{ data.get('name').lower().replace(' ', '_') }}
+  version: {{ version }}
+
+source:
+  path: ../../
+
+build:
+  noarch: python
+  script: '{{ PYTHON }} -m pip install ./tango_ds -vv'
+
+entry_points:
+  {{ data.get('entry_points', {}).get('console_scripts', []) }}
+
+requirements:
+  host:
+    - python
+    - setuptools
+    {% for dep in data.get('setup_requires', []) %}
+    - {{ dep.lower() }}
+    {% endfor %}
+  run:
+    - python
+    {% for dep in data.get('install_requires', []) %}
+    - {{ dep.lower() }}
+    {% endfor %}
+
+test:
+  imports:
+    {% for pack in data.get('packages', []) %}
+    - {{ pack }}
+    {% endfor %}
+  requires:
+    - pip
+  commands:
+    - pip check
+    - RaspberryPiIO --help
+
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
+  summary: {{ data.get('description') }}
+  author: {{ data.get('author') }}
+  description: {{ data.get('long_description') }}
